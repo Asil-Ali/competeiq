@@ -499,4 +499,9 @@ def main():
 
 
 if __name__ == "__main__":
+  import threading, http.server
+    def health():
+        server = http.server.HTTPServer(("0.0.0.0", 10000), http.server.BaseHTTPRequestHandler)
+        server.serve_forever()
+    threading.Thread(target=health, daemon=True).start()
     main()
