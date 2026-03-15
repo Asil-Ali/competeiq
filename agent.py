@@ -265,8 +265,8 @@ def run_agent(user_id, user_message, ai_config, message_callback,
 
     # ── Quality Gate (independent Groq evaluator) ──
     set_current_user(user_id)
-    competitors = load_data("all_competitors").get("data", [])
-    insights    = load_data("insights").get("data", {}) or {}
+    competitors = load_data("all_competitors").get("data") or []
+    insights    = load_data("insights").get("data") or {}
 
     message_callback("🔍 Running independent quality check...")
     evaluation = evaluate_analysis(
@@ -297,8 +297,8 @@ def run_agent(user_id, user_message, ai_config, message_callback,
         S.set_val(user_id, "agent_messages", messages)
 
         set_current_user(user_id)
-        competitors = load_data("all_competitors").get("data", [])
-        insights    = load_data("insights").get("data", {}) or {}
+        competitors = load_data("all_competitors").get("data") or []
+        insights    = load_data("insights").get("data") or {}
         evaluation  = evaluate_analysis(
             business or {}, competitors, insights, ai_config, groq_config
         )
