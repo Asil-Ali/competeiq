@@ -120,6 +120,39 @@ def _call_openrouter(messages, system, api_key, model):
     return {"stop_reason": stop, "content": blocks}
 
 
+
+def _call_groq(messages, system, api_key, model):
+    """Call Groq API (OpenAI-compatible format)."""
+    ot = [{"type": "function", "function": {
+        "name": t["name"], "description": t["description"],
+        "parameters": t["input_schema"]}} for t in TOOL_DEFINITIONS]
+
+    body = json.dumps({
+        "model": model, "max_tokens": 4096, "tools": ot,
+        "tool_choice": "auto",
+        "messages": _to_openai_messages(messages, system),
+    }).encode()
+    req = urllib.request.Request(
+        "https://api.groq.com/openai/v1/chat/completions", data=body,
+        headers={"Content-Type": "application/json",
+                 "Authorization": f"Bearer {api_key}"})
+    with urllib.request.urlopen(req, timeout=90) as r:
+        resp = json.loads(r.read().decode())
+
+    choice = resp["choices"][0]
+    msg    = choice["message"]
+    blocks = []
+    if msg.get("content"):
+        blocks.append({"type": "text", "text": msg["content"]})
+    for tc in (msg.get("tool_calls") or []):
+        try:   inp = json.loads(tc["function"]["arguments"])
+        except: inp = {}
+        blocks.append({"type": "tool_use", "id": tc["id"],
+                        "name": tc["function"]["name"], "input": inp})
+    stop = "tool_use" if choice.get("finish_reason") == "tool_calls" else "end_turn"
+    return {"stop_reason": stop, "content": blocks}
+
+
 def _call_ai_with_retry(messages, system, ai_config, use_fallback=False):
     """Call AI with exponential backoff. Tries fallback model on repeated failure."""
     provider = ai_config["provider"]
@@ -131,6 +164,8 @@ def _call_ai_with_retry(messages, system, ai_config, use_fallback=False):
     last_err = None
     for attempt in range(MAX_RETRIES):
         try:
+            if provider == "groq":
+                return _call_groq(messages, system, api_key, model)
             if provider == "openrouter":
                 return _call_openrouter(messages, system, api_key, model)
             return _call_anthropic(messages, system, api_key, model)
