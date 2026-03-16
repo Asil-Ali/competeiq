@@ -11,8 +11,8 @@ _OR_PATTERN   = r"^sk-or-v1-[a-zA-Z0-9]{20,}$"
 _ANT_PATTERN  = r"^sk-ant-[a-zA-Z0-9\-_]{20,}$"
 _GROQ_PATTERN = r"^gsk_[a-zA-Z0-9]{20,}$"
 
-DEFAULT_MAIN_MODEL      = "google/gemini-2.0-flash-exp:free"
-DEFAULT_FALLBACK_MODEL  = "mistralai/mistral-7b-instruct:free"
+DEFAULT_MAIN_MODEL     = "meta-llama/llama-3.1-8b-instruct:free"
+DEFAULT_FALLBACK_MODEL = "meta-llama/llama-3.1-8b-instruct:free"
 DEFAULT_EVALUATOR_MODEL = "llama-3.3-70b-versatile"   # Groq model
 
 
